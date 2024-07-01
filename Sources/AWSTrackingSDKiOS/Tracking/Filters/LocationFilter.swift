@@ -1,6 +1,6 @@
 import Foundation
 
-public protocol LocationFilter {
+@objc public protocol LocationFilter {
     func shouldUpload(currentLocation: LocationEntity, previousLocation: LocationEntity?, trackerConfig: LocationTrackerConfig) -> Bool
 }
 

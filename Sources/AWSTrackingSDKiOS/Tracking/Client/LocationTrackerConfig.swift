@@ -29,8 +29,7 @@ private struct TrackerConfigCodable: Codable  {
     }
 }
 
-
-public struct LocationTrackerConfig {
+@objc public class LocationTrackerConfig: NSObject {
     public var locationFilters: [LocationFilter]
     public var trackingDistanceInterval: Double
     public var trackingTimeInterval: Double

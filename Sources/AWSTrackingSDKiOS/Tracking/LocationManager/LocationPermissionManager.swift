@@ -1,13 +1,24 @@
 import CoreLocation
 import UIKit
 
-public enum BackgroundTrackingMode: String {
-    case Active
-    case BatterySaving
-    case None
+@objc public enum BackgroundTrackingMode: Int {
+    case Active = 0
+    case BatterySaving = 1
+    case None = 2
+
+    public var description: String {
+        switch self {
+        case .Active:
+            return "Active"
+        case .BatterySaving:
+            return "BatterySaving"
+        case .None:
+            return "None"
+        }
+    }
 }
 
-public class LocationPermissionManager {
+internal class LocationPermissionManager {
     internal let locationManager: CLLocationManager
     
     init(locationManager: CLLocationManager) {

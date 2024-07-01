@@ -3,7 +3,7 @@ import CoreLocation
 import AmazonLocationiOSAuthSDK
 import AWSLocation
 
-public class LocationTracker {
+@objc public class LocationTracker: NSObject {
     
     internal var locationProvider: LocationProvider
     private var locationUploadSerializer: LocationUploadSerializer?
@@ -14,7 +14,7 @@ public class LocationTracker {
     private var config: LocationTrackerConfig
     private var trackerName: String
 
-    public init(provider: LocationCredentialsProvider, trackerName: String, config: LocationTrackerConfig? = nil) {
+    @objc public init(provider: LocationCredentialsProvider, trackerName: String, config: LocationTrackerConfig? = nil) {
         self.trackerName = trackerName
 
         logger = Logger.shared
@@ -34,7 +34,7 @@ public class LocationTracker {
             deviceId = DeviceIdProvider.getDeviceID()!
         }
         
-        if provider.getCognitoProvider() != nil {
+        if provider.getCredentialsProvider() != nil {
             amazonLocationClient = AmazonLocationClient(locationCredentialsProvider: provider)
             locationUploadSerializer = LocationUploadSerializer(client: amazonLocationClient!, deviceId: deviceId, trackerName: self.trackerName)
         }
@@ -42,7 +42,7 @@ public class LocationTracker {
         logger.log("Location Tracker intialized")
     }
     
-    public func setTrackerConfig(config: LocationTrackerConfig) {
+    @objc public func setTrackerConfig(config: LocationTrackerConfig) {
         self.config = config
         let containsDistanceLocationFilter = self.config.locationFilters.contains { $0 is DistanceLocationFilter }
         
@@ -56,16 +56,16 @@ public class LocationTracker {
             activityType: self.config.activityType)
     }
     
-    public func getTrackerConfig() -> LocationTrackerConfig {
+    @objc public func getTrackerConfig() -> LocationTrackerConfig {
         return config
     }
     
-    public func getDeviceId() -> String? {
+    @objc public func getDeviceId() -> String? {
         return DeviceIdProvider.getDeviceID()
     }
     
     
-     public func startTracking() throws {
+    @objc public func startTracking() throws {
         guard let locationPermissionManager = locationProvider.locationPermissionManager else {
               return
         }
@@ -74,8 +74,8 @@ public class LocationTracker {
             throw TrackingLocationError.permissionDenied
         }
         
-         if locationPermissionManager.checkPermission() == .notDetermined {
-             locationProvider.locationManager.requestLocation()
+        if locationPermissionManager.checkPermission() == .notDetermined {
+             locationProvider.locationPermissionManager?.requestPermission()
          }
          
         locationProvider.locationPermissionManager?.setBackgroundMode(mode: .None)
@@ -86,16 +86,16 @@ public class LocationTracker {
         isTrackingActive = true
     }
     
-    public func resumeTracking() throws {
+    @objc public func resumeTracking() throws {
         try startTracking()
     }
     
-    public func stopTracking() {
+    @objc public func stopTracking() {
         locationProvider.unsubscribeToLocationUpdates()
         isTrackingActive = false
     }
     
-    public func startBackgroundTracking(mode: BackgroundTrackingMode) throws {
+    @objc public func startBackgroundTracking(mode: BackgroundTrackingMode) throws {
         
         guard let locationPermissionManager = locationProvider.locationPermissionManager else {
               return
@@ -119,30 +119,30 @@ public class LocationTracker {
         }
     }
     
-    public func resumeBackgroundTracking(mode: BackgroundTrackingMode) throws {
+    @objc public func resumeBackgroundTracking(mode: BackgroundTrackingMode) throws {
         try startBackgroundTracking(mode: mode)
     }
     
-    public func stopBackgroundTracking() {
+    @objc public func stopBackgroundTracking() {
         locationProvider.locationPermissionManager?.setBackgroundMode(mode: .None)
         locationProvider.unsubscribeToLocationUpdates()
         isTrackingActive = false
     }
     
-    public func getTrackerDeviceLocation(nextToken: String?, startTime: Date? = nil, endTime: Date? = nil, maxResults: Int? = nil) async throws -> GetDevicePositionHistoryOutput? {
+    @objc public func getTrackerDeviceLocation(nextToken: String?, startTime: Date? = nil, endTime: Date? = nil, maxResults: NSNumber? = nil) async throws -> GetDevicePositionHistoryResponse? {
         if locationUploadSerializer != nil {
-           return try await getTrackerDeviceLocations(with: locationUploadSerializer!, nextToken: nil, startTime: startTime, endTime: endTime, maxResults: maxResults)
+            return try await getTrackerDeviceLocations(with: locationUploadSerializer!, nextToken: nil, startTime: startTime, endTime: endTime, maxResults: maxResults?.intValue)
         }
         return nil
     }
     
-    public func getDeviceLocation() -> LocationEntity? {
+    @objc public func getDeviceLocation() -> LocationEntity? {
         return locationProvider.lastKnownLocation
     }
     
-    public func batchEvaluateGeofences(input: BatchEvaluateGeofencesInput) async throws -> BatchEvaluateGeofencesOutput? {
+    @objc public func batchEvaluateGeofences(request: BatchEvaluateGeofencesRequest) async throws -> BatchEvaluateGeofencesResponse? {
         if locationUploadSerializer != nil {
-            return try await locationUploadSerializer?.batchEvaluateGeofences(input: input)
+            return try await locationUploadSerializer?.batchEvaluateGeofences(request: request)
         }
         return nil
     }
@@ -205,7 +205,7 @@ public class LocationTracker {
         }
     }
 
-    private func getTrackerDeviceLocations<S: LocationUploadSerializer>(with serializer: S, nextToken: String?, startTime: Date? = nil, endTime: Date? = nil, maxResults: Int? = nil)  async throws -> GetDevicePositionHistoryOutput? {
+    private func getTrackerDeviceLocations<S: LocationUploadSerializer>(with serializer: S, nextToken: String?, startTime: Date? = nil, endTime: Date? = nil, maxResults: Int? = nil)  async throws -> GetDevicePositionHistoryResponse? {
         return try await serializer.getDeviceLocation(nextToken: nextToken, startTime: startTime, endTime: endTime, maxResults: maxResults)
     }
     
@@ -264,7 +264,7 @@ public class LocationTracker {
             } else {
                 self.logger.log("Failed after 3 retries")
                 if let error = response?.errors?.first?.error {
-                    let code = (error.code)?.rawValue
+                    let code = error.code
                     throw NSError(domain: "batchUpdateDevicePostion", code: 0, userInfo: [NSLocalizedDescriptionKey: "\(String(describing: code)): \(error.message!)"])
                 }
             }

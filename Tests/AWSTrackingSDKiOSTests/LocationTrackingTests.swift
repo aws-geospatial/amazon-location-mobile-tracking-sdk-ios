@@ -301,11 +301,11 @@ final class LocationTrackingTests: XCTestCase {
         
         let amazonClient = authHelper.getLocationClient()
         
-        let update = LocationClientTypes.DevicePositionUpdate(accuracy: LocationClientTypes.PositionalAccuracy.init(horizontal: 1), deviceId: "DeviceID", position: [-71.985564, 41.758023], positionProperties: nil, sampleTime: Date())
+        let update = DevicePositionUpdate(accuracy: DevicePositionalAccuracy.init(horizontal: 1), deviceId: "DeviceID", position: [-71.985564, 41.758023], positionProperties: nil, sampleTime: Date())
         let updates = [update]
-        let input = BatchUpdateDevicePositionInput(trackerName: trackerName, updates: updates)
+        let request = BatchUpdateDevicePositionRequest(trackerName: trackerName, updates: updates)
         
-        let positionUpdateResponse = try? await amazonClient!.batchUpdateDevicePosition(input: input)
+        let positionUpdateResponse = try? await amazonClient!.batchUpdateDevicePosition(request: request)
         
         XCTAssertEqual(positionUpdateResponse?.errors?.count, 0, "Device Position updated successfully")
     }
