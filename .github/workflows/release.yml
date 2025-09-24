@@ -1,0 +1,107 @@
+name: iOS CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -switch /Applications/Xcode.app/Contents/Developer
+
+      - name: Build
+        run: |
+          xcodebuild -scheme AmazonLocationiOSTrackingSDK \
+            -destination 'platform=macOS' \
+            build
+
+      - name: Run Mock Tests
+        if: github.repository != 'aws-geospatial/amazon-location-mobile-tracking-sdk-ios'
+        run: |
+          xcodebuild -scheme AmazonLocationiOSTrackingSDK \
+            -destination 'platform=macOS' \
+            test \
+            -only-testing:AWSTrackingSDKiOSTests/LocationTrackerMockTests
+
+      - name: Run Integration Tests
+        if: github.repository == 'aws-geospatial/amazon-location-mobile-tracking-sdk-ios'
+        env:
+          REGION: ${{ secrets.AWS_REGION }}
+          API_KEY: ${{ secrets.AWS_API_KEY }}
+          IDENTITY_POOL_ID: ${{ secrets.AWS_IDENTITY_POOL_ID }}
+          DEVICE_ID: ${{ secrets.AWS_DEVICE_ID }}
+          TRACKER_NAME: ${{ secrets.AWS_TRACKER_NAME }}
+        run: |
+          xcodebuild -scheme AmazonLocationiOSTrackingSDK \
+            -destination 'platform=macOS' \
+            test
+  release:
+    needs: build-and-test
+    if: github.ref == 'refs/heads/main' && github.repository == 'aws-geospatial/amazon-location-mobile-tracking-sdk-ios'
+    runs-on: macos-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Read version from Package.version
+        id: read-version
+        run: |
+          version=$(jq -r '.version' Package.version)
+          echo "current-version=$version" >> $GITHUB_OUTPUT
+
+      - name: Check if tag already exists
+        id: check
+        run: |
+          current="${{ steps.read-version.outputs.current-version }}"
+          previous=$(git describe --tags --abbrev=0 2>/dev/null || echo "0.0.0")
+
+          if git rev-parse "$current" >/dev/null 2>&1; then
+            published=true
+          else
+            published=false
+          fi
+
+          echo "published=$published" >> $GITHUB_OUTPUT
+          echo "previous-version=$previous" >> $GITHUB_OUTPUT
+          echo "current-version=$current" >> $GITHUB_OUTPUT
+
+      - name: Extract changelog for version
+        if: steps.check.outputs.published == 'false'
+        run: |
+          if [ -f "CHANGELOG.md" ]; then
+            awk '/# ${{ steps.check.outputs.current-version }}/{f=1;next}/# ${{ steps.check.outputs.previous-version }}/{f=0} f' CHANGELOG.md > changelog_for_version.md
+          else
+            echo "Release ${{ steps.check.outputs.current-version }}" > changelog_for_version.md
+          fi
+          cat changelog_for_version.md
+
+      - name: Create git tag
+        if: steps.check.outputs.published == 'false'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag ${{ steps.check.outputs.current-version }}
+          git push origin ${{ steps.check.outputs.current-version }}
+
+      - name: Create GitHub Release
+        if: steps.check.outputs.published == 'false'
+        uses: ncipollo/release-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag: ${{ steps.check.outputs.current-version }}
+          name: "v${{ steps.check.outputs.current-version }}"
+          bodyFile: changelog_for_version.md
+          allowUpdates: true
+          draft: false
+          prerelease: false

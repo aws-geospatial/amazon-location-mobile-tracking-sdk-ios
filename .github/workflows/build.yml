@@ -1,0 +1,35 @@
+name: Build Only
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -switch /Applications/Xcode.app/Contents/Developer
+
+      - name: Build for iOS Device
+        run: |
+          xcodebuild -scheme AmazonLocationiOSTrackingSDK \
+            -destination 'generic/platform=iOS' \
+            build
+
+      - name: Build for iOS Simulator
+        run: |
+          xcodebuild -scheme AmazonLocationiOSTrackingSDK \
+            -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.4' \
+            build
+
+      - name: Build for macOS
+        run: |
+          xcodebuild -scheme AmazonLocationiOSTrackingSDK \
+            -destination 'platform=macOS' \
+            build
