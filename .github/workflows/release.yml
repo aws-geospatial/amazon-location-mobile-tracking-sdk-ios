@@ -30,14 +30,19 @@ jobs:
             test \
             -only-testing:AWSTrackingSDKiOSTests/LocationTrackerMockTests
 
-      - name: Run Integration Tests
+      - name: Ensure TestConfig.plist exists
+        run: |
+          if [ ! -f "Tests/AWSTrackingSDKiOSTests/TestConfig.plist" ]; then
+            if [ "${{ github.repository }}" == "aws-geospatial/amazon-location-mobile-tracking-sdk-ios" ] && [ -n "${{ secrets.TEST_CONFIG_PLIST }}" ]; then
+              echo "${{ secrets.TEST_CONFIG_PLIST }}" | base64 --decode > Tests/AWSTrackingSDKiOSTests/TestConfig.plist
+            else
+              echo "Error: TestConfig.plist not found and TEST_CONFIG_PLIST secret is not configured."
+              exit 1
+            fi
+          fi
+
+      - name: Run Integration Tests (Main repo only)
         if: github.repository == 'aws-geospatial/amazon-location-mobile-tracking-sdk-ios'
-        env:
-          REGION: ${{ secrets.AWS_REGION }}
-          API_KEY: ${{ secrets.AWS_API_KEY }}
-          IDENTITY_POOL_ID: ${{ secrets.AWS_IDENTITY_POOL_ID }}
-          DEVICE_ID: ${{ secrets.AWS_DEVICE_ID }}
-          TRACKER_NAME: ${{ secrets.AWS_TRACKER_NAME }}
         run: |
           xcodebuild -scheme AmazonLocationiOSTrackingSDK \
             -destination 'platform=macOS' \

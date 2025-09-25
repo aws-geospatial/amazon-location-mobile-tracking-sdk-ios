@@ -1,10 +1,3 @@
-# 1.0.1
-
-### ✨ Features and improvements
-
-- Added more unit tests to improve code coverage
-- Added new workflow to automate the package release
-
 # 1.0.0
 
 ### ⚠️ Breaking changes

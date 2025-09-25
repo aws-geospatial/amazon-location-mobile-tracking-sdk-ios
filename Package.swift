@@ -32,6 +32,9 @@ let package = Package(
             path: "Sources"),
         .testTarget(
             name: "AWSTrackingSDKiOSTests",
-            dependencies: ["AmazonLocationiOSTrackingSDK"]),
+            dependencies: ["AmazonLocationiOSTrackingSDK"],
+            resources: [
+                .process("TestConfig.plist")
+            ]),
     ]
 )

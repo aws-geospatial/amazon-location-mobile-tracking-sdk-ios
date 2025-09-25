@@ -28,7 +28,7 @@ final class LocationTrackerMockTests: XCTestCase {
     
     // Location Database testing
     
-    // Tests mock database save operation
+   
     func testMockLocationDatabaseSave() {
         let location = CLLocation(latitude: 49.246559, longitude: -123.063554)
         let entity = mockDatabase.save(location: location)
@@ -39,7 +39,7 @@ final class LocationTrackerMockTests: XCTestCase {
         XCTAssertEqual(mockDatabase.count(), 1)
     }
     
-    // Tests mock database save failure scenario
+
     func testMockLocationDatabaseSaveFailure() {
         mockDatabase.shouldFailSave = true
         let location = CLLocation(latitude: 49.246559, longitude: -123.063554)
@@ -51,7 +51,7 @@ final class LocationTrackerMockTests: XCTestCase {
     }
     
     
-    // Tests mock database delete operation
+
     func testMockLocationDatabaseDelete() {
         let location = CLLocation(latitude: 49.246559, longitude: -123.063554)
         let entity = mockDatabase.save(location: location)!
@@ -64,7 +64,7 @@ final class LocationTrackerMockTests: XCTestCase {
         XCTAssertEqual(mockDatabase.count(), 0)
     }
     
-    // Tests mock database delete all operation
+    
     func testMockLocationDatabaseDeleteAll() {
         let location1 = CLLocation(latitude: 49.246559, longitude: -123.063554)
         let location2 = CLLocation(latitude: 50.246559, longitude: -124.063554)
@@ -79,7 +79,7 @@ final class LocationTrackerMockTests: XCTestCase {
         XCTAssertEqual(mockDatabase.count(), 0)
     }
     
-    // Tests mock location save and delete workflow
+  
     func testMockSaveLocationToDisk() {
         let location = CLLocation(latitude: 49.246559, longitude: -123.063554)
         let locationEntity = mockDatabase.save(location: location)
@@ -94,7 +94,7 @@ final class LocationTrackerMockTests: XCTestCase {
         XCTAssertEqual(mockDatabase.deleteCallCount, 1)
     }
     
-    // Tests comprehensive mock location deletion scenarios
+    
     func testMockDeleteLocationToDisk() {
           var location = CLLocation(latitude: 49.246559, longitude: -123.063554)
           var locationEntity = mockDatabase.save(location: location)
@@ -128,7 +128,7 @@ final class LocationTrackerMockTests: XCTestCase {
     
     // Location Tracker Testing
     
-    // Tests mock tracker permission error handling
+
     func testMockLocationTrackerPermissionError() {
         mockTracker.shouldThrowError = true
         
@@ -139,7 +139,7 @@ final class LocationTrackerMockTests: XCTestCase {
         XCTAssertFalse(mockTracker.isTrackingActive)
     }
     
-    // Tests mock tracker configuration setting and retrieval
+    
     func testMockLocationTrackerConfig() {
         let config = LocationTrackerConfig(trackingDistanceInterval: 100, trackingTimeInterval: 60)
         
@@ -150,7 +150,7 @@ final class LocationTrackerMockTests: XCTestCase {
         XCTAssertEqual(retrievedConfig.trackingDistanceInterval, 100)
     }
     
-    // Tests mock tracker initialization properties
+    
     func testMockLocationTrackerInitialization() {
          XCTAssertNotNil(mockTracker)
          XCTAssertGreaterThanOrEqual(mockTracker.getTrackerConfig().trackingTimeInterval, 30)
@@ -159,7 +159,7 @@ final class LocationTrackerMockTests: XCTestCase {
      }
     
     
-    // Tests mock tracker start/stop/resume tracking operations
+    
     func testMockLocationStartTracking() {
         XCTAssertFalse(mockTracker.isTrackingActive)
         
@@ -184,7 +184,7 @@ final class LocationTrackerMockTests: XCTestCase {
         XCTAssertEqual(mockTracker.stopTrackingCallCount, 2)
     }
     
-    // Tests mock tracker background tracking operations
+    
     func testMockLocationStartBackgroundTracking() {
         XCTAssertFalse(mockTracker.isTrackingActive)
         
@@ -211,7 +211,7 @@ final class LocationTrackerMockTests: XCTestCase {
     
     
     // Device Testing
-    // Tests mock device ID provider operations
+    
     func testMockDeviceIdProvider() {
         MockDeviceIdProvider.clearDeviceID()
         XCTAssertNil(MockDeviceIdProvider.getDeviceID())
@@ -224,7 +224,7 @@ final class LocationTrackerMockTests: XCTestCase {
         XCTAssertEqual(MockDeviceIdProvider.getDeviceID(), customId)
     }
         
-    // Tests mock device ID setting with custom ID
+    
     func testMockSetDeviceIDWithID() {
         let deviceID = UUID().uuidString
         MockDeviceIdProvider.clearDeviceID()
@@ -235,7 +235,7 @@ final class LocationTrackerMockTests: XCTestCase {
     
     // Location Filters Testing
     
-    // Tests mock location filter upload decisions
+    
     func testMockLocationFilter() {
         let mockFilter = MockLocationFilter()
         let config = LocationTrackerConfig()
@@ -259,7 +259,7 @@ final class LocationTrackerMockTests: XCTestCase {
     
     // Location Permission Manager Testing
     
-    // Tests mock permission manager status checks
+    
     func testMockLocationPermissionManagerPermissions() {
            // Test not determined status
            mockPermissionManager.mockPermissionStatus = .notDetermined
@@ -289,7 +289,7 @@ final class LocationTrackerMockTests: XCTestCase {
            XCTAssertTrue(mockPermissionManager.hasLocationPermissionDenied())
        }
        
-    // Tests mock permission manager request methods
+    
        func testMockLocationPermissionManagerRequests() {
            mockPermissionManager.requestPermission()
            XCTAssertEqual(mockPermissionManager.requestPermissionCallCount, 1)
@@ -298,7 +298,7 @@ final class LocationTrackerMockTests: XCTestCase {
            XCTAssertEqual(mockPermissionManager.requestAlwaysPermissionCallCount, 1)
        }
        
-    // Tests mock permission manager background mode settings
+    
        func testMockLocationPermissionManagerBackgroundModes() {
            // Test None mode
            mockPermissionManager.setBackgroundMode(mode: .None)
@@ -321,7 +321,7 @@ final class LocationTrackerMockTests: XCTestCase {
     
     // Location Provider Testing
     
-    // Tests mock location provider initialization and permissions
+    
     func testMockLocationProvider() {
         XCTAssertNotNil(mockLocationProvider.mockLocationPermissionManager)
         
@@ -336,7 +336,7 @@ final class LocationTrackerMockTests: XCTestCase {
     
     // Misc Testing
     
-    // Tests mock utility array chunking function
+    
     func testMockUtilsChunked() {
         let array = Array(0...19)
         let chunks = Utils.chunked(array, size: 5)
@@ -346,7 +346,7 @@ final class LocationTrackerMockTests: XCTestCase {
         XCTAssertEqual(chunks[3], [15, 16, 17, 18, 19])
     }
     
-    // Tests mock user defaults storage operations
+    
     func testMockUserDefaults() {
         let key = "test-key"
         let value = "test-value"
