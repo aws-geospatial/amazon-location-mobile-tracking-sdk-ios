@@ -64,6 +64,11 @@ class MockLocationFilter: LocationFilter {
         callCount += 1
         return shouldUploadResult
     }
+    
+    func shouldUploadMock(currentLocation: MockLocationEntity, previousLocation: MockLocationEntity?, trackerConfig: LocationTrackerConfig) -> Bool {
+        callCount += 1
+        return shouldUploadResult
+    }
 }
 
 class MockDeviceIdProvider {

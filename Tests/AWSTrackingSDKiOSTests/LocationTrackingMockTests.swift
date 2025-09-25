@@ -239,19 +239,28 @@ final class LocationTrackerMockTests: XCTestCase {
     func testMockLocationFilter() {
         let mockFilter = MockLocationFilter()
         let config = LocationTrackerConfig()
-        let currentLocation = LocationEntity()
-        let previousLocation = LocationEntity()
+        
+        // Create mock entities instead of Core Data entities
+        let mockCurrentLocation = MockLocationEntity()
+        mockCurrentLocation.latitude = 49.246559
+        mockCurrentLocation.longitude = -123.063554
+        mockCurrentLocation.timestamp = Date()
+        
+        let mockPreviousLocation = MockLocationEntity()
+        mockPreviousLocation.latitude = 49.246559
+        mockPreviousLocation.longitude = -123.063554
+        mockPreviousLocation.timestamp = Date().addingTimeInterval(-60)
         
         // Test successful upload
         mockFilter.shouldUploadResult = true
-        let shouldUpload1 = mockFilter.shouldUpload(currentLocation: currentLocation, previousLocation: previousLocation, trackerConfig: config)
+        let shouldUpload1 = mockFilter.shouldUploadMock(currentLocation: mockCurrentLocation, previousLocation: mockPreviousLocation, trackerConfig: config)
         
         XCTAssertTrue(shouldUpload1)
         XCTAssertEqual(mockFilter.callCount, 1)
         
         // Test blocked upload
         mockFilter.shouldUploadResult = false
-        let shouldUpload2 = mockFilter.shouldUpload(currentLocation: currentLocation, previousLocation: previousLocation, trackerConfig: config)
+        let shouldUpload2 = mockFilter.shouldUploadMock(currentLocation: mockCurrentLocation, previousLocation: mockPreviousLocation, trackerConfig: config)
         
         XCTAssertFalse(shouldUpload2)
         XCTAssertEqual(mockFilter.callCount, 2)
