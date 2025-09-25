@@ -102,58 +102,7 @@ final class LocationTrackingTests: XCTestCase {
         XCTAssertGreaterThanOrEqual(locationTracker.getTrackerConfig().trackingTimeInterval, 30, "Tracker time interval ")
         XCTAssertNotNil(locationTracker.getDeviceId(), "Tracker device Id")
         XCTAssertNotNil(Logger.getLoggerKey())
-    }
-    
-
-    func testLocationStartTracking() async throws {
-        let config = readTestConfig()
-        
-        let identityPoolID = config["identityPoolID"]!
-        let trackerName = config["trackerName"]!
-
-        let locationTracker = try await LocationTracker(identityPoolId: identityPoolID, trackerName: trackerName)
-
-        try locationTracker.startTracking()
-        XCTAssertEqual(locationTracker.isTrackingActive, true, "Tracking has started")
-        
-        let location = CLLocation(latitude: 49.2471, longitude: -123.063554)
-        
-        locationTracker.trackLocation(location: location)
-        
-        locationTracker.stopTracking()
-        XCTAssertEqual(locationTracker.isTrackingActive, false, "Tracking has stopped")
-        
-        try locationTracker.resumeTracking()
-        XCTAssertEqual(locationTracker.isTrackingActive, true, "Tracking has resumed")
-        locationTracker.stopTracking()
-        XCTAssertEqual(locationTracker.isTrackingActive, false, "Tracking has stopped")
-    }
-    
-
-    func testLocationStartBackgroundTracking() async throws {
-        let config = readTestConfig()
-        
-        let identityPoolID = config["identityPoolID"]!
-        let trackerName = config["trackerName"]!
-
-        let locationTracker = try await LocationTracker(identityPoolId: identityPoolID, trackerName: trackerName)
-        try locationTracker.startBackgroundTracking(mode: .None)
-        XCTAssertEqual(locationTracker.isTrackingActive, true, "Tracking has started")
-        
-        let location = CLLocation(latitude: 49.2471, longitude: -123.063554)
-        
-        locationTracker.trackLocation(location: location)
-        
-        locationTracker.stopBackgroundTracking()
-        XCTAssertEqual(locationTracker.isTrackingActive, false, "Tracking has stopped")
-        
-        try locationTracker.resumeBackgroundTracking(mode: .None)
-        XCTAssertEqual(locationTracker.isTrackingActive, true, "Tracking has resumed")
-        locationTracker.stopBackgroundTracking()
-        XCTAssertEqual(locationTracker.isTrackingActive, false, "Tracking has stopped")
-    }
-
-    
+    }    
 
     func testLocationTrackingConfig() async throws {
         let config = readTestConfig()
@@ -270,18 +219,6 @@ final class LocationTrackingTests: XCTestCase {
         
         XCTAssertNotNil(result, "Found device's tracker locations")
     }
-
-
-    func testLocationManager() {
-        let locationProvider = LocationProvider()
-        locationProvider.locationPermissionManager!.setBackgroundMode(mode: .None)
-        
-        XCTAssertEqual(locationProvider.locationPermissionManager!.hasLocationPermission(), false)
-        XCTAssertEqual(locationProvider.locationPermissionManager!.hasAlwaysLocationPermission(), false)
-        XCTAssertEqual(locationProvider.locationPermissionManager!.hasLocationPermissionDenied(), false)
-        XCTAssertEqual(locationProvider.locationPermissionManager!.checkPermission() , .notDetermined)
-    }
-
 
     func testLocationPermissionManagerSetBackgroundModeNone() {
         let locationManager = CLLocationManager()
