@@ -1,3 +1,9 @@
+# 1.0.1
+
+### ✨ Features and improvements
+
+- Added more integration and unit tests to improve the code coverage
+
 # 1.0.0
 
 ### ⚠️ Breaking changes
