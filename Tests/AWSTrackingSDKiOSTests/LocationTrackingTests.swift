@@ -238,7 +238,9 @@ final class LocationTrackingTests: XCTestCase {
     }
 
 
-    func testLocationPermissionManagerRequestPermissions() {
+    func testLocationPermissionManagerRequestPermissions() throws {
+  
+        
         let locationManager = CLLocationManager()
         let permissionManager = LocationPermissionManager(locationManager: locationManager)
         
@@ -250,7 +252,9 @@ final class LocationTrackingTests: XCTestCase {
     }
 
 
-    func testLocationPermissionManagerCheckPermission() {
+    func testLocationPermissionManagerCheckPermission() throws {
+ 
+        
         let locationManager = CLLocationManager()
         let permissionManager = LocationPermissionManager(locationManager: locationManager)
         
@@ -288,6 +292,7 @@ final class LocationTrackingTests: XCTestCase {
         
         XCTAssertNotNil(locationProvider)
     }
+
 
 }
 

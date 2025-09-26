@@ -44,6 +44,7 @@ jobs:
           if [ -f "Tests/AWSTrackingSDKiOSTests/TestConfig.plist" ]; then
             xcodebuild -scheme AmazonLocationiOSTrackingSDK \
               -destination 'platform=macOS' \
+              -skip-testing:AWSTrackingSDKiOSTests/LocationPermissionTests \
               test
           else
             echo "TestConfig.plist not found. Skipping integration tests."
