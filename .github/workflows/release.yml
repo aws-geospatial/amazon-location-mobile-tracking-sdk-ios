@@ -8,6 +8,9 @@ on:
 
 jobs:
   build-and-test:
+    permissions:
+      contents: read
+      packages: write
     uses: ./.github/workflows/build.yml
     secrets: inherit
   release:
