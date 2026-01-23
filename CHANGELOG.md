@@ -1,3 +1,9 @@
+# 1.0.2
+
+### ✨ Features and improvements
+
+- Updated `amazon-location-mobile-auth-sdk-ios` dependency to `1.0.1` to get `aws-sdk-swift` dependency upgrade to resolve [security vulnerability](https://github.com/aws-geospatial/amazon-location-mobile-tracking-sdk-ios/security/dependabot/1)
+
 # 1.0.1
 
 ### ✨ Features and improvements
