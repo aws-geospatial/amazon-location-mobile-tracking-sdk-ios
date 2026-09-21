@@ -3,6 +3,7 @@ import CoreLocation
 @testable import AmazonLocationiOSTrackingSDK
 import AmazonLocationiOSAuthSDK
 import AWSLocation
+import SmithyIdentity
 
 final class LocationTrackingTests: XCTestCase {
     
@@ -218,6 +219,26 @@ final class LocationTrackingTests: XCTestCase {
         let result = try await tracker.getTrackerDeviceLocation(nextToken: nil, startTime: startTime, endTime: endTime)
         
         XCTAssertNotNil(result, "Found device's tracker locations")
+    }
+
+    func testLocationTrackerInitializationWithAuthHelper() async throws {
+        let region = "us-east-1"
+        let trackerName = "test-tracker"
+
+        // Build an AuthHelper from a custom credentials resolver (no Cognito Identity Pool).
+        let credentialsIdentity = AWSCredentialIdentity(
+            accessKey: "AKIDEXAMPLE",
+            secret: "SECRETEXAMPLE",
+            sessionToken: "SESSIONTOKENEXAMPLE"
+        )
+        let resolver = try StaticAWSCredentialIdentityResolver(credentialsIdentity)
+        let authHelper = try await AuthHelper.withCredentialsProvider(credentialsProvider: resolver, region: region)
+
+        let locationTracker = try LocationTracker(authHelper: authHelper, trackerName: trackerName)
+
+        XCTAssertNotNil(locationTracker, "Tracker should initialize with a custom-credentials AuthHelper")
+        XCTAssertGreaterThanOrEqual(locationTracker.getTrackerConfig().trackingTimeInterval, 30)
+        XCTAssertNotNil(locationTracker.getDeviceId())
     }
 
     func testLocationPermissionManagerSetBackgroundModeNone() {

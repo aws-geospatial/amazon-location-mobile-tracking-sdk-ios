@@ -15,8 +15,29 @@ import AWSLocation
     private var config: LocationTrackerConfig
     private var trackerName: String
 
-    public init(identityPoolId: String, trackerName: String, config: LocationTrackerConfig? = nil) async throws {
-        self.authHelper = try await AuthHelper.withIdentityPoolId(identityPoolId: identityPoolId)
+    public convenience init(identityPoolId: String, trackerName: String, config: LocationTrackerConfig? = nil) async throws {
+        let authHelper = try await AuthHelper.withIdentityPoolId(identityPoolId: identityPoolId)
+        try self.init(authHelper: authHelper, trackerName: trackerName, config: config)
+    }
+
+    /// Initializes a `LocationTracker` with a pre-built `AuthHelper`.
+    ///
+    /// Use this when your credentials come from a source other than a Cognito Identity Pool —
+    /// for example, short-lived SigV4 credentials vended by your backend. Build the `AuthHelper`
+    /// with `AuthHelper.withCredentialsProvider(credentialsProvider:region:)` and pass it here.
+    ///
+    /// Example:
+    /// ```swift
+    /// let authHelper = try await AuthHelper.withCredentialsProvider(credentialsProvider: resolver, region: "us-east-1")
+    /// let tracker = try LocationTracker(authHelper: authHelper, trackerName: "my-tracker")
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - authHelper: A pre-built `AuthHelper` that provides the credentials for the location client.
+    ///   - trackerName: The name of the tracker resource in Amazon Location Service.
+    ///   - config: Optional tracker configuration. Falls back to the saved or default config.
+    public init(authHelper: AuthHelper, trackerName: String, config: LocationTrackerConfig? = nil) throws {
+        self.authHelper = authHelper
         self.locationClient = LocationClient(config: self.authHelper.getLocationClientConfig())
         self.trackerName = trackerName
 
