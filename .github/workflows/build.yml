@@ -33,18 +33,21 @@ jobs:
         run: |
           xcodebuild -scheme AmazonLocationiOSTrackingSDK \
             -destination 'generic/platform=iOS' \
+            -skipPackagePluginValidation \
             build
 
       - name: Build for macOS
         run: |
           xcodebuild -scheme AmazonLocationiOSTrackingSDK \
             -destination 'platform=macOS' \
+            -skipPackagePluginValidation \
             build
 
       - name: Run Mock Tests
         run: |
           xcodebuild -scheme AmazonLocationiOSTrackingSDK \
             -destination 'platform=macOS' \
+            -skipPackagePluginValidation \
             test \
             -only-testing:AWSTrackingSDKiOSTests/LocationTrackerMockTests
 
@@ -53,6 +56,7 @@ jobs:
           if [ -n "${{ secrets.TEST_CONFIG_PLIST }}" ]; then
             xcodebuild -scheme AmazonLocationiOSTrackingSDK \
               -destination 'platform=macOS' \
+              -skipPackagePluginValidation \
               -skip-testing:AWSTrackingSDKiOSTests/LocationPermissionTests \
               test
           else
