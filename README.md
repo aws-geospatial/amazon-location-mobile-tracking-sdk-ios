@@ -18,6 +18,8 @@ These are the functions available from this SDK:
 
   <tr><td>LocationTracker</td><td>init(identityPoolId: String, trackerName: String, config: LocationTrackerConfig? = nil)</td><td>This is an initializer function to create a LocationTracker object. It requires an identityPoolId and trackerName and an optional LocationTrackingConfig. If config is not provided it will be initialized with default values</td></tr>
 
+<tr><td>LocationTracker</td><td>init(authHelper: AuthHelper, trackerName: String, config: LocationTrackerConfig? = nil)</td><td>This is an initializer function to create a LocationTracker object from a pre-built <code>AuthHelper</code>. Use this when your credentials come from a source other than a Cognito Identity Pool (for example, custom SigV4 credentials via <code>AuthHelper.withCredentialsProvider</code>). It requires an AuthHelper and trackerName and an optional LocationTrackerConfig. If config is not provided it will be initialized with default values</td></tr>
+
 <tr><td>LocationTracker</td><td>setTrackerConfig(config: LocationTrackerConfig)</td><td>This sets Tracker's config to take effect at any point after initialization of location tracker</td></tr>
 
 <tr><td>LocationTracker</td><td>getTrackerConfig() -> LocationTrackerConfig</td><td>This gets the location tracking config to use or modify in your app</td></tr>
@@ -85,6 +87,26 @@ let trackerConfig = LocationTrackerConfig(locationFilters: [TimeLocationFilter()
             logLevel: .debug)
 let locationTracker = try await LocationTracker(identityPoolId: "<Cognito Identity Pool ID>", trackerName: "<My-tracker-name>", config: trackerConfig)
 locationTracker.setConfig(config: trackerConfig)
+```
+
+If your credentials come from a source other than a Cognito Identity Pool (for example, short-lived SigV4 credentials vended by your backend), build an `AuthHelper` with `AuthHelper.withCredentialsProvider(...)` from the [Auth SDK](https://github.com/aws-geospatial/amazon-location-mobile-auth-sdk-ios) and pass it to `LocationTracker`:
+
+```swift
+import AmazonLocationiOSAuthSDK
+import AmazonLocationiOSTrackingSDK
+import SmithyIdentity
+
+// Build a resolver from credentials your app obtained (e.g. from your backend / STS)
+let credentialsIdentity = AWSCredentialIdentity(
+    accessKey: "<Access key>",
+    secret: "<Secret key>",
+    sessionToken: "<Session token>"
+)
+let resolver = try StaticAWSCredentialIdentityResolver(credentialsIdentity)
+let authHelper = try await AuthHelper.withCredentialsProvider(credentialsProvider: resolver, region: "<Region>")
+
+// Create the LocationTracker using the custom-credentials AuthHelper
+let locationTracker = try LocationTracker(authHelper: authHelper, trackerName: "<My-tracker-name>")
 ```
 
 You can use the location client to make calls to Amazon Location Service. Here are a few simple examples for tracking operations:
