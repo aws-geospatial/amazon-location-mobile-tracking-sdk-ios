@@ -25,12 +25,11 @@ jobs:
       - name: Create TestConfig.plist from template
         run: cp Tests/AWSTrackingSDKiOSTests/TestConfigTemplate.plist "$TEST_CONFIG"
 
-      # Fork and Dependabot runs get no OIDC token, so they skip integration tests.
+      # Fork PRs get no OIDC token, so they skip integration tests.
       - name: Configure AWS credentials for integration tests
         id: aws-creds
         if: >-
           vars.TEST_AWS_ACCOUNT_ID != '' &&
-          github.actor != 'dependabot[bot]' &&
           (github.event_name != 'pull_request' ||
           github.event.pull_request.head.repo.full_name == github.repository)
         uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
