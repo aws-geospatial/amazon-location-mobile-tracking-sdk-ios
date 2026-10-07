@@ -11,23 +11,53 @@ jobs:
   build-and-test:
     permissions:
       contents: read
+      id-token: write
     runs-on: macos-latest
+    env:
+      TEST_CONFIG: Tests/AWSTrackingSDKiOSTests/TestConfig.plist
     steps:
       - uses: actions/checkout@v4
 
       - name: Select Xcode
         run: sudo xcode-select -switch /Applications/Xcode.app/Contents/Developer
 
-      - name: Ensure TestConfig.plist exists
+      # Package.swift bundles TestConfig.plist, so it must exist before any build.
+      - name: Create TestConfig.plist from template
+        run: cp Tests/AWSTrackingSDKiOSTests/TestConfigTemplate.plist "$TEST_CONFIG"
+
+      # Fork PRs get no OIDC token, so they skip integration tests.
+      - name: Configure AWS credentials for integration tests
+        id: aws-creds
+        if: >-
+          vars.TEST_AWS_ACCOUNT_ID != '' &&
+          (github.event_name != 'pull_request' ||
+          github.event.pull_request.head.repo.full_name == github.repository)
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.TEST_AWS_ACCOUNT_ID }}:role/ios-tracking-sdk-ci-github
+          aws-region: us-east-1
+          role-duration-seconds: 900
+          # Keep the credentials out of the job environment, so the build and
+          # test steps (and their Swift package dependencies) never see them.
+          output-env-credentials: false
+          output-credentials: true
+
+      - name: Fill TestConfig.plist from SSM
+        id: test-config
+        if: steps.aws-creds.outcome == 'success'
+        env:
+          AWS_REGION: us-east-1
+          AWS_ACCESS_KEY_ID: ${{ steps.aws-creds.outputs.aws-access-key-id }}
+          AWS_SECRET_ACCESS_KEY: ${{ steps.aws-creds.outputs.aws-secret-access-key }}
+          AWS_SESSION_TOKEN: ${{ steps.aws-creds.outputs.aws-session-token }}
         run: |
-          if [ ! -f "Tests/AWSTrackingSDKiOSTests/TestConfig.plist" ]; then
-            if [ -n "${{ secrets.TEST_CONFIG_PLIST }}" ]; then
-              echo "${{ secrets.TEST_CONFIG_PLIST }}" | base64 --decode > Tests/AWSTrackingSDKiOSTests/TestConfig.plist
-            else
-              echo "TEST_CONFIG_PLIST secret not configured; creating TestConfig.plist from template so the package can build. Integration tests will be skipped."
-              cp Tests/AWSTrackingSDKiOSTests/TestConfigTemplate.plist Tests/AWSTrackingSDKiOSTests/TestConfig.plist
-            fi
-          fi
+          get() { aws ssm get-parameter --name "/geospatial-sdk-tests/$1" --query Parameter.Value --output text; }
+          POOL=$(get shared/identity-pool-id)
+          TRACKER=$(get ios-tracking/tracker-name)
+          plutil -replace identityPoolID -string "$POOL" "$TEST_CONFIG"
+          plutil -replace trackerName -string "$TRACKER" "$TEST_CONFIG"
+          plutil -replace region -string "${POOL%%:*}" "$TEST_CONFIG"
+          echo "ready=true" >> "$GITHUB_OUTPUT"
 
       - name: Build for iOS Device
         run: |
@@ -52,13 +82,10 @@ jobs:
             -only-testing:AWSTrackingSDKiOSTests/LocationTrackerMockTests
 
       - name: Run Integration Tests
+        if: steps.test-config.outputs.ready == 'true'
         run: |
-          if [ -n "${{ secrets.TEST_CONFIG_PLIST }}" ]; then
-            xcodebuild -scheme AmazonLocationiOSTrackingSDK \
-              -destination 'platform=macOS' \
-              -skipPackagePluginValidation \
-              -skip-testing:AWSTrackingSDKiOSTests/LocationPermissionTests \
-              test
-          else
-            echo "TEST_CONFIG_PLIST secret not configured. Skipping integration tests."
-          fi
+          xcodebuild -scheme AmazonLocationiOSTrackingSDK \
+            -destination 'platform=macOS' \
+            -skipPackagePluginValidation \
+            -skip-testing:AWSTrackingSDKiOSTests/LocationPermissionTests \
+            test
