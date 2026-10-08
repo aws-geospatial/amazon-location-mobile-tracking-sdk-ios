@@ -1,3 +1,11 @@
+# 1.1.0
+
+### ✨ Features and improvements
+
+- Added `LocationTracker(authHelper:trackerName:config:)` so a tracker can use custom credentials, such as an `AuthHelper` built with `AuthHelper.withCredentialsProvider(...)` ([#24](https://github.com/aws-geospatial/amazon-location-mobile-tracking-sdk-ios/issues/24))
+- Updated `amazon-location-mobile-auth-sdk-ios` dependency to `1.2.0`
+- Updated `swift-nio` to `2.103.0` and `swift-nio-http2` to `1.46.0`
+
 # 1.0.2
 
 ### ✨ Features and improvements
